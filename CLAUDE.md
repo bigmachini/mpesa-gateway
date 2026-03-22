@@ -89,6 +89,30 @@ Tokens are cached in Redis with key `daraja:token:<shortcode_uid>`. TTL = `expir
 ### Celery Queues
 Two queues: `default` (general tasks) and `webhooks` (webhook delivery). This prevents webhook retry storms from blocking other work. Webhook retry backoff: 30s → 60s → 5m → 15m → 1h+.
 
+## Admin UI
+
+All admin classes use **Django Unfold** (`django-unfold`). The pattern for every app:
+
+```python
+from django.contrib import admin
+from unfold.admin import ModelAdmin
+
+@admin.register(MyModel)
+class MyModelAdmin(ModelAdmin):
+    ...
+```
+
+For the `Client` model (extends `AbstractUser`), use multiple inheritance — `ModelAdmin` first:
+```python
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from unfold.admin import ModelAdmin
+
+class ClientAdmin(ModelAdmin, BaseUserAdmin):
+    ...
+```
+
+`unfold`, `unfold.contrib.filters`, and `unfold.contrib.forms` must appear **before** `django.contrib.admin` in `INSTALLED_APPS`. There is no `unfold.contrib.auth` in this version.
+
 ## Critical Implementation Rules
 
 - **Credential encryption:** All Daraja credential fields (`consumer_key`, `consumer_secret`, `passkey`, `initiator_name`) on `Shortcode` must use `django-encrypted-model-fields`. Never store as plain text.
