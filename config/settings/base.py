@@ -11,6 +11,9 @@ DEBUG = env.bool('DEBUG', default=False)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 DJANGO_APPS = [
+    'unfold',
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -92,7 +95,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Redis
+# Redis — cache only (Daraja token storage)
 REDIS_URL = env('REDIS_URL', default='redis://localhost:6379/0')
 
 CACHES = {
@@ -102,8 +105,8 @@ CACHES = {
     }
 }
 
-# Celery
-CELERY_BROKER_URL = REDIS_URL
+# Celery — RabbitMQ as broker, Redis for results
+CELERY_BROKER_URL = env('RABBITMQ_URL', default='amqp://guest:guest@localhost:5672/')
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TASK_QUEUES = {
     'default': {},

@@ -1,5 +1,6 @@
 # Core
 Django==4.2.*
+django-unfold==0.45.*
 djangorestframework==3.15.*
 psycopg2-binary==2.9.*
 django-environ==0.11.*
@@ -21,7 +22,11 @@ django-encrypted-model-fields==0.6.*
 # CORS
 django-cors-headers==4.3.*
 
+# Production server
+gunicorn==22.*
+
 # Dev / testing
+django-extensions==3.2.*
 pytest==8.*
 pytest-django==4.*
 factory-boy==3.*

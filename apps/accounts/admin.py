@@ -1,17 +1,18 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from unfold.admin import ModelAdmin
 
 from .models import Client
 
 
 @admin.register(Client)
-class ClientAdmin(UserAdmin):
+class ClientAdmin(ModelAdmin, BaseUserAdmin):
     list_display = ['email', 'business_name', 'tier', 'is_active', 'created_at']
     list_filter = ['tier', 'is_active']
     search_fields = ['email', 'business_name', 'phone_number']
     ordering = ['-created_at']
 
-    fieldsets = UserAdmin.fieldsets + (
+    fieldsets = BaseUserAdmin.fieldsets + (
         ('Business Info', {'fields': ('business_name', 'phone_number', 'tier')}),
     )
 
