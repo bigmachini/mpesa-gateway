@@ -1,0 +1,401 @@
+{
+  "info": {
+    "_postman_id": "ad159660-cc6f-49bd-9108-4f960f8b1a12",
+    "name": "Safaricom APIs",
+    "description": "# Introduction\nWhat does your API do?\n\n# Overview\nThings that the developers should know about\n\n# Authentication\nWhat is the preferred way of using the API?\n\n# Error Codes\nWhat errors and status codes can a user expect?\n\n# Rate limit\nIs there a limit to the number of requests an user can send?",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "1128336",
+    "_collection_link": "https://go.postman.co/collection/19584485-ad159660-cc6f-49bd-9108-4f960f8b1a12?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Make a B2B Payment Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"Initiator\": \"\",\r\n    \"SecurityCredential\": \"\",\r\n    \"CommandID\": \"\",\r\n    \"SenderIdentifierType\": \"\",\r\n    \"RecieverIdentifierType\": \"\",\r\n    \"Amount\": \"\",\r\n    \"PartyA\": \"\",\r\n    \"PartyB\": \"\",\r\n    \"AccountReference\": \"\",\r\n    \"Remarks\": \"\",\r\n    \"QueueTimeOutURL\": \"\",\r\n    \"ResultURL\": \"\"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/b2b/v1/paymentrequest",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "b2b",
+            "v1",
+            "paymentrequest"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reverse an M-Pesa Transaction",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"Initiator\": \"\",\r\n    \"SecurityCredential\": \"\",\r\n    \"CommandID\": \"TransactionReversal\",\r\n    \"TransactionID\": \"\",\r\n    \"Amount\": \"\",\r\n    \"ReceiverParty\": \"\",\r\n    \"RecieverIdentifierType\": \"4\",\r\n    \"ResultURL\": \"\",\r\n    \"QueueTimeOutURL\": \"\",\r\n    \"Remarks\": \"\",\r\n    \"Occasion\": \"\"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/reversal/v1/request",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "reversal",
+            "v1",
+            "request"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Query the Transaction Status of an M-Pesa Transaction",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"Initiator\": \"\",\r\n    \"SecurityCredential\": \"\",\r\n    \"CommandID\": \"TransactionStatusQuery\",\r\n    \"TransactionID\": \"\",\r\n    \"PartyA\": \"\",\r\n    \"IdentifierType\": \"\",\r\n    \"ResultURL\": \"\",\r\n    \"QueueTimeOutURL\": \"\",\r\n    \"Remarks\": \"\",\r\n    \"Occasion\": \"\"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "transactionstatus",
+            "v1",
+            "query"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Simulate a C2B Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"ShortCode\":\" \",\r\n    \"CommandID\":\"CustomerPayBillOnline\",\r\n    \"Amount\":\" \",\r\n    \"Msisdn\":\" \",\r\n    \"BillRefNumber\":\" \"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "c2b",
+            "v1",
+            "simulate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Query the status of a Lipa na M-Pesa Online Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"BusinessShortCode\": \" \" ,\r\n    \"Password\": \" \",\r\n    \"Timestamp\": \" \",\r\n    \"CheckoutRequestID\": \" \"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "stkpushquery",
+            "v1",
+            "query"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Make a B2C Payment Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"InitiatorName\": \"\",\r\n    \"SecurityCredential\": \"\",\r\n    \"CommandID\": \"\",\r\n    \"Amount\": \"\",\r\n    \"PartyA\": \"\",\r\n    \"PartyB\": \"\",\r\n    \"Remarks\": \"\",\r\n    \"QueueTimeOutURL\": \"\",\r\n    \"ResultURL\": \"\",\r\n  \"Occasion\": \"\"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "b2c",
+            "v1",
+            "paymentrequest"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Initiate a Lipa na M-Pesa Online Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"BusinessShortCode\": \" \",\r\n    \"Password\": \" \",\r\n    \"Timestamp\": \" \",\r\n    \"TransactionType\": \"CustomerPayBillOnline\",\r\n    \"Amount\": \" \",\r\n    \"PartyA\": \" \",\r\n    \"PartyB\": \" \",\r\n    \"PhoneNumber\": \" \",\r\n    \"CallBackURL\": \"https://ip_address:port/callback\",\r\n    \"AccountReference\": \" \",\r\n    \"TransactionDesc\": \" \"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "stkpush",
+            "v1",
+            "processrequest"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Make an Account Balance query",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"Initiator\": \"\",\r\n    \"SecurityCredential\": \"\",\r\n    \"CommandID\": \"AccountBalance\",\r\n    \"PartyA\": \"\",\r\n    \"IdentifierType\": \"4\",\r\n    \"Remarks\": \"\",\r\n    \"QueueTimeOutURL\": \"\",\r\n    \"ResultURL\": \"\"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "accountbalance",
+            "v1",
+            "query"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate an OAuth Access Token",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "showPassword",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": []
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "oauth",
+            "v1",
+            "generate"
+          ],
+          "query": [
+            {
+              "key": "grant_type",
+              "value": "client_credentials"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Register C2B Confirmation and Validation URLs",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <Access-Token>"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"ShortCode\": \"\",\r\n    \"ResponseType\": \"\",\r\n    \"ConfirmationURL\": \"\",\r\n    \"ValidationURL\": \"\"\r\n}"
+        },
+        "url": {
+          "raw": "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl",
+          "protocol": "https",
+          "host": [
+            "sandbox",
+            "safaricom",
+            "co",
+            "ke"
+          ],
+          "path": [
+            "mpesa",
+            "c2b",
+            "v1",
+            "registerurl"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

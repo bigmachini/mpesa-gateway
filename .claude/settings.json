@@ -1,0 +1,7 @@
+{
+  "effortLevel": "high",
+  "alwaysThinkingEnabled": true,
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "config.settings.development"
+  }
+}
