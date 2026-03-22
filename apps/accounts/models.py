@@ -12,7 +12,9 @@ class Client(AbstractUser):
     phone_number = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
     tier = models.CharField(max_length=20, choices=TIER_CHOICES, default='byoc')
-    is_active = models.BooleanField(default=False)  # activated after admin approval
+    # is_active inherits default=True from AbstractUser.
+    # New self-registered clients are set inactive by RegisterSerializer
+    # and require admin approval before they can log in.
     created_at = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'email'

@@ -132,6 +132,7 @@ DARAJA_CONSUMER_KEY = env('DARAJA_CONSUMER_KEY', default='')
 DARAJA_CONSUMER_SECRET = env('DARAJA_CONSUMER_SECRET', default='')
 DARAJA_PASSKEY = env('DARAJA_PASSKEY', default='')
 DARAJA_SHORTCODE = env('DARAJA_SHORTCODE', default='')
+DARAJA_DISPLAY_NAME = env('DARAJA_DISPLAY_NAME', default='')
 DARAJA_BASE_URL = (
     'https://sandbox.safaricom.co.ke'
     if DARAJA_ENV == 'sandbox'

@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate --settings=config.settings.development &&
+             python manage.py runserver 0.0.0.0:8000 --settings=config.settings.development"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+
+  celery:
+    build: .
+    restart: unless-stopped
+    command: celery -A config worker -Q default,webhooks --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development

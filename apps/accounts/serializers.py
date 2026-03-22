@@ -13,7 +13,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'password', 'business_name', 'phone_number']
 
     def create(self, validated_data):
-        return Client.objects.create_user(**validated_data)
+        return Client.objects.create_user(is_active=False, **validated_data)
 
 
 class ProfileSerializer(serializers.ModelSerializer):

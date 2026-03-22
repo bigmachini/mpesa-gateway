@@ -1,0 +1,111 @@
+import random
+import uuid
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from encrypted_model_fields.fields import EncryptedCharField
+
+
+def generate_account_code():
+    """Auto-generate a unique 6-digit account code."""
+    while True:
+        code = f"{random.randint(100000, 999999):06d}"
+        if not Shortcode.objects.filter(account_code=code).exists():
+            return code
+
+
+def suggest_account_codes(preferred: str, count: int = 5) -> list[str]:
+    """
+    Return up to `count` available codes numerically close to `preferred`.
+    Walks outward from the preferred number (±1, ±2, ...) and collects
+    available codes until we have enough or exhaust the range.
+    """
+    base = int(preferred)
+    taken = set(Shortcode.objects.filter(account_code__isnull=False).values_list('account_code', flat=True))
+    suggestions = []
+    step = 1
+    while len(suggestions) < count and step <= 999999:
+        for candidate in (base + step, base - step):
+            if 0 <= candidate <= 999999:
+                code = f"{candidate:06d}"
+                if code != preferred and code not in taken:
+                    suggestions.append(code)
+                    if len(suggestions) == count:
+                        break
+        step += 1
+    return suggestions
+
+
+class Shortcode(models.Model):
+    SHORTCODE_TYPES = [
+        ('paybill', 'Paybill'),
+        ('till', 'Lipa na M-Pesa (Buy Goods)'),
+    ]
+    TIER_TYPES = [
+        ('byoc', 'Bring Your Own Credentials'),
+        ('shared', 'Shared Paybill'),
+    ]
+
+    client = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='shortcodes',
+    )
+    uid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    shortcode_type = models.CharField(max_length=20, choices=SHORTCODE_TYPES)
+    tier = models.CharField(max_length=20, choices=TIER_TYPES)
+    shortcode_number = models.CharField(max_length=20)
+    display_name = models.CharField(max_length=255)
+
+    # Shared Till only — 6-digit code the client's customers enter before # when paying.
+    # Null for BYOC shortcodes. Unique across the platform since all Shared Till
+    # payments land on the same Paybill; this code is how we route them.
+    account_code = models.CharField(max_length=6, unique=True, blank=True, null=True)
+
+    # Daraja credentials — encrypted at rest, BYOC only
+    consumer_key = EncryptedCharField(max_length=255, blank=True)
+    consumer_secret = EncryptedCharField(max_length=255, blank=True)
+    passkey = EncryptedCharField(max_length=500, blank=True)
+    initiator_name = EncryptedCharField(max_length=255, blank=True)
+
+    webhook_url = models.URLField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('client', 'shortcode_number')
+        ordering = ['-created_at']
+
+    def clean(self):
+        if self.shortcode_type == 'till' and self.tier == 'shared':
+            raise ValidationError(
+                {'tier': "Shared Paybill is only available for Paybill shortcodes, not Lipa na M-Pesa (Buy Goods)."}
+            )
+
+    def __str__(self):
+        return f"{self.display_name} ({self.shortcode_number})"
+
+    def get_callback_urls(self):
+        base = settings.PLATFORM_BASE_URL
+        return {
+            'c2b_confirmation': f"{base}/api/v1/mpesa/c2b/{self.uid}/confirm/",
+            'c2b_validation': f"{base}/api/v1/mpesa/c2b/{self.uid}/validate/",
+            'stk_callback': f"{base}/api/v1/mpesa/stk/{self.uid}/callback/",
+        }
+
+
+class PaybillShortcode(Shortcode):
+    """Proxy model for Paybill shortcodes (BYOC or Shared Paybill tier)."""
+    class Meta:
+        proxy = True
+        verbose_name = 'Paybill Shortcode'
+        verbose_name_plural = 'Paybill Shortcodes'
+
+
+class TillShortcode(Shortcode):
+    """Proxy model for Lipa na M-Pesa (Buy Goods) shortcodes — always BYOC."""
+    class Meta:
+        proxy = True
+        verbose_name = 'Lipa na M-Pesa Shortcode'
+        verbose_name_plural = 'Lipa na M-Pesa Shortcodes'
