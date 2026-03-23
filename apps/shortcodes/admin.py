@@ -1,13 +1,32 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin
-from unfold.admin import ModelAdmin
+from unfold.admin import ModelAdmin, TabularInline
 
 from .models import (
-    PaybillShortcode, Shortcode, TillShortcode,
+    PaybillShortcode, PaymentReference, Shortcode, TillShortcode,
     generate_account_code, suggest_account_codes,
 )
 from .widgets import AccountCodeWidget
+
+
+# ---------------------------------------------------------------------------
+# PaymentReference inline (shown inside Paybill shortcode change view)
+# ---------------------------------------------------------------------------
+
+class PaymentReferenceInline(TabularInline):
+    model = PaymentReference
+    extra = 0
+    fields = ['reference', 'amount', 'expires_at', 'is_used', 'created_at']
+    readonly_fields = ['reference', 'amount', 'expires_at', 'is_used', 'created_at']
+    ordering = ['-created_at']
+    show_change_link = True
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -85,12 +104,22 @@ class PaybillShortcodeForm(forms.ModelForm):
 @admin.register(PaybillShortcode)
 class PaybillShortcodeAdmin(ModelAdmin):
     form = PaybillShortcodeForm
+    inlines = [PaymentReferenceInline]
     list_display = ['display_name', 'shortcode_number', 'tier', 'account_code', 'client', 'is_active', 'created_at']
     list_filter = ['tier', 'is_active']
     search_fields = ['display_name', 'shortcode_number', 'client__email', 'client__business_name']
     readonly_fields = ['uid', 'created_at']
     ordering = ['-created_at']
     actions = ['activate_shortcodes', 'deactivate_shortcodes']
+
+    _VALIDATION_FIELDSET = ('C2B Payment Validation', {
+        'description': (
+            'Enable to have Safaricom call our validation endpoint before confirming payments. '
+            'Pre-register mode: client registers references via API. '
+            'Webhook mode: we call the client\'s URL in real time.'
+        ),
+        'fields': ['enable_c2b_validation', 'validation_mode', 'validation_webhook_url'],
+    })
 
     # Fieldsets for adding (tier not yet known — show everything)
     _ADD_FIELDSETS = [
@@ -105,6 +134,7 @@ class PaybillShortcodeAdmin(ModelAdmin):
                            'Display name and shortcode number are set from platform config.',
             'fields': ['account_code'],
         }),
+        _VALIDATION_FIELDSET,
     ]
 
     # Fieldsets when editing a BYOC paybill
@@ -114,12 +144,14 @@ class PaybillShortcodeAdmin(ModelAdmin):
         ('Daraja Credentials', {
             'fields': ['consumer_key', 'consumer_secret', 'passkey', 'initiator_name'],
         }),
+        _VALIDATION_FIELDSET,
     ]
 
     # Fieldsets when editing a Shared Paybill
     _SHARED_FIELDSETS = [
         (None, {'fields': ['client', 'tier', 'display_name', 'shortcode_number',
                             'account_code', 'is_active', 'webhook_url', 'uid', 'created_at']}),
+        _VALIDATION_FIELDSET,
     ]
 
     def get_fieldsets(self, request, obj=None):
@@ -205,3 +237,31 @@ class TillShortcodeAdmin(ModelAdmin):
     @admin.action(description='Deactivate selected shortcodes')
     def deactivate_shortcodes(self, request, queryset):
         queryset.update(is_active=False)
+
+
+# ---------------------------------------------------------------------------
+# PaymentReference standalone admin
+# ---------------------------------------------------------------------------
+
+@admin.register(PaymentReference)
+class PaymentReferenceAdmin(ModelAdmin):
+    list_display = ['reference', 'shortcode', 'amount', 'expires_at', 'is_used', 'created_at']
+    list_filter = ['is_used']
+    search_fields = ['reference', 'shortcode__display_name', 'shortcode__shortcode_number']
+    readonly_fields = ['shortcode', 'reference', 'amount', 'expires_at', 'is_used', 'created_at']
+    ordering = ['-created_at']
+    date_hierarchy = 'created_at'
+
+    fieldsets = [
+        (None, {'fields': ['shortcode', 'reference', 'amount', 'expires_at']}),
+        ('Status', {'fields': ['is_used', 'created_at']}),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

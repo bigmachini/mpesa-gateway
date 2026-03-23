@@ -1,0 +1,33 @@
+info:
+  name: Query the status of a Lipa na M-Pesa Online Payment
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+  headers:
+    - name: Authorization
+      value: Bearer <Access-Token>
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: "{\r
+
+      \    \"BusinessShortCode\": \" \" ,\r
+
+      \    \"Password\": \" \",\r
+
+      \    \"Timestamp\": \" \",\r
+
+      \    \"CheckoutRequestID\": \" \"\r
+
+      }"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

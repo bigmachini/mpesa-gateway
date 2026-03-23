@@ -1,9 +1,11 @@
 import random
 import uuid
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from encrypted_model_fields.fields import EncryptedCharField
 
 
@@ -46,6 +48,10 @@ class Shortcode(models.Model):
         ('byoc', 'Bring Your Own Credentials'),
         ('shared', 'Shared Paybill'),
     ]
+    VALIDATION_MODES = [
+        ('pre_register', 'Pre-registered References'),
+        ('webhook', 'Webhook (real-time)'),
+    ]
 
     client = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -70,6 +76,14 @@ class Shortcode(models.Model):
     initiator_name = EncryptedCharField(max_length=255, blank=True)
 
     webhook_url = models.URLField(blank=True, null=True)
+
+    # C2B payment validation (Paybill only)
+    enable_c2b_validation = models.BooleanField(default=False)
+    validation_mode = models.CharField(
+        max_length=20, choices=VALIDATION_MODES, blank=True, default='',
+    )
+    validation_webhook_url = models.URLField(blank=True, null=True)
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -82,6 +96,15 @@ class Shortcode(models.Model):
             raise ValidationError(
                 {'tier': "Shared Paybill is only available for Paybill shortcodes, not Lipa na M-Pesa (Buy Goods)."}
             )
+        if self.enable_c2b_validation:
+            if not self.validation_mode:
+                raise ValidationError(
+                    {'validation_mode': "Select a validation mode when C2B validation is enabled."}
+                )
+            if self.validation_mode == 'webhook' and not self.validation_webhook_url:
+                raise ValidationError(
+                    {'validation_webhook_url': "A webhook URL is required for webhook validation mode."}
+                )
 
     def __str__(self):
         return f"{self.display_name} ({self.shortcode_number})"
@@ -89,9 +112,9 @@ class Shortcode(models.Model):
     def get_callback_urls(self):
         base = settings.PLATFORM_BASE_URL
         return {
-            'c2b_confirmation': f"{base}/api/v1/mpesa/c2b/{self.uid}/confirm/",
-            'c2b_validation': f"{base}/api/v1/mpesa/c2b/{self.uid}/validate/",
-            'stk_callback': f"{base}/api/v1/mpesa/stk/{self.uid}/callback/",
+            'c2b_confirmation': f"{base}/api/v1/callback/c2b/{self.uid}/confirm/",
+            'c2b_validation': f"{base}/api/v1/callback/c2b/{self.uid}/validate/",
+            'stk_callback': f"{base}/api/v1/callback/stk/{self.uid}/callback/",
         }
 
 
@@ -109,3 +132,36 @@ class TillShortcode(Shortcode):
         proxy = True
         verbose_name = 'Lipa na M-Pesa Shortcode'
         verbose_name_plural = 'Lipa na M-Pesa Shortcodes'
+
+
+class PaymentReference(models.Model):
+    """
+    A pre-registered payment reference for C2B validation (pre_register mode).
+
+    The client registers an expected payment (reference + amount) before directing
+    their customer to pay. When Safaricom calls c2b_validate, we look up the reference
+    and only accept if the amount matches and the reference has not expired or been used.
+    """
+    shortcode = models.ForeignKey(
+        Shortcode, on_delete=models.CASCADE, related_name='payment_references',
+    )
+    reference = models.CharField(max_length=50)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('shortcode', 'reference')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.reference} — {self.amount} ({self.shortcode})"
+
+    def is_valid_for(self, amount: Decimal) -> bool:
+        """Return True if this reference is still usable and amount matches exactly."""
+        return (
+            not self.is_used
+            and self.expires_at > timezone.now()
+            and self.amount == amount
+        )

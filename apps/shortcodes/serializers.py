@@ -1,7 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from .models import Shortcode, generate_account_code, suggest_account_codes
+from .models import PaymentReference, Shortcode, generate_account_code, suggest_account_codes
 
 
 class ShortcodeSerializer(serializers.ModelSerializer):
@@ -15,7 +15,9 @@ class ShortcodeSerializer(serializers.ModelSerializer):
         fields = [
             'uid', 'shortcode_type', 'tier', 'shortcode_number', 'display_name',
             'account_code', 'consumer_key', 'consumer_secret', 'passkey', 'initiator_name',
-            'webhook_url', 'is_active', 'created_at', 'callback_urls',
+            'webhook_url',
+            'enable_c2b_validation', 'validation_mode', 'validation_webhook_url',
+            'is_active', 'created_at', 'callback_urls',
         ]
         read_only_fields = ['uid', 'created_at', 'callback_urls']
         extra_kwargs = {
@@ -24,6 +26,8 @@ class ShortcodeSerializer(serializers.ModelSerializer):
             'passkey': {'write_only': True},
             'shortcode_number': {'required': False},
             'display_name': {'required': False},  # auto-set from business_name for Shared Paybill
+            'validation_mode': {'required': False},
+            'validation_webhook_url': {'required': False},
         }
 
     def get_callback_urls(self, obj):
@@ -85,6 +89,27 @@ class ShortcodeSerializer(serializers.ModelSerializer):
                         {field: "Required for BYOC shortcodes."}
                     )
 
+        # Validate C2B validation config
+        enable_validation = attrs.get(
+            'enable_c2b_validation',
+            getattr(self.instance, 'enable_c2b_validation', False),
+        )
+        if enable_validation:
+            mode = attrs.get('validation_mode', getattr(self.instance, 'validation_mode', ''))
+            if not mode:
+                raise serializers.ValidationError(
+                    {'validation_mode': "Select a validation mode when C2B validation is enabled."}
+                )
+            if mode == 'webhook':
+                webhook_url = attrs.get(
+                    'validation_webhook_url',
+                    getattr(self.instance, 'validation_webhook_url', None),
+                )
+                if not webhook_url:
+                    raise serializers.ValidationError(
+                        {'validation_webhook_url': "A webhook URL is required for webhook validation mode."}
+                    )
+
         # Prevent account_code changes after creation
         if self.instance and 'account_code' in attrs:
             attrs.pop('account_code')
@@ -94,7 +119,7 @@ class ShortcodeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and not self.instance:
             shortcode_number = attrs.get('shortcode_number')
-            if Shortcode.objects.filter(client=request.user, shortcode_number=shortcode_number).exists():
+            if Shortcode.objects.filter(client=request.user.company, shortcode_number=shortcode_number).exists():
                 raise serializers.ValidationError(
                     {'shortcode_number': 'You already have a shortcode with this number.'}
                 )
@@ -111,3 +136,27 @@ class WebhookURLSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shortcode
         fields = ['webhook_url']
+
+
+class PaymentReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentReference
+        fields = ['id', 'reference', 'amount', 'expires_at', 'is_used', 'created_at']
+        read_only_fields = ['id', 'is_used', 'created_at']
+
+    def validate_expires_at(self, value):
+        from django.utils import timezone
+        if value <= timezone.now():
+            raise serializers.ValidationError("expires_at must be in the future.")
+        return value
+
+    def validate(self, attrs):
+        # Uniqueness check: (shortcode, reference) — shortcode is injected in perform_create
+        shortcode = self.context.get('shortcode')
+        if shortcode and PaymentReference.objects.filter(
+            shortcode=shortcode, reference=attrs.get('reference', '')
+        ).exists():
+            raise serializers.ValidationError(
+                {'reference': 'A payment reference with this value already exists for this shortcode.'}
+            )
+        return attrs

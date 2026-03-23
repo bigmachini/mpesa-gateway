@@ -133,6 +133,9 @@ DARAJA_CONSUMER_SECRET = env('DARAJA_CONSUMER_SECRET', default='')
 DARAJA_PASSKEY = env('DARAJA_PASSKEY', default='')
 DARAJA_SHORTCODE = env('DARAJA_SHORTCODE', default='')
 DARAJA_DISPLAY_NAME = env('DARAJA_DISPLAY_NAME', default='')
+# Restrict Safaricom callback views to known Safaricom IPs.
+# Set to False in development so sandbox testing works without IP spoofing.
+DARAJA_RESTRICT_CALLBACK_IPS = env.bool('DARAJA_RESTRICT_CALLBACK_IPS', default=True)
 DARAJA_BASE_URL = (
     'https://sandbox.safaricom.co.ke'
     if DARAJA_ENV == 'sandbox'

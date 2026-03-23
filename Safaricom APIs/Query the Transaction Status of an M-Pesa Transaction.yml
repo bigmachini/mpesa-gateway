@@ -1,0 +1,45 @@
+info:
+  name: Query the Transaction Status of an M-Pesa Transaction
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query
+  headers:
+    - name: Authorization
+      value: Bearer <Access-Token>
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: "{\r
+
+      \    \"Initiator\": \"\",\r
+
+      \    \"SecurityCredential\": \"\",\r
+
+      \    \"CommandID\": \"TransactionStatusQuery\",\r
+
+      \    \"TransactionID\": \"\",\r
+
+      \    \"PartyA\": \"\",\r
+
+      \    \"IdentifierType\": \"\",\r
+
+      \    \"ResultURL\": \"\",\r
+
+      \    \"QueueTimeOutURL\": \"\",\r
+
+      \    \"Remarks\": \"\",\r
+
+      \    \"Occasion\": \"\"\r
+
+      }"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

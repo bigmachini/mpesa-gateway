@@ -1,0 +1,35 @@
+info:
+  name: Simulate a C2B Payment
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate
+  headers:
+    - name: Authorization
+      value: Bearer <Access-Token>
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: "{\r
+
+      \    \"ShortCode\":\" \",\r
+
+      \    \"CommandID\":\"CustomerPayBillOnline\",\r
+
+      \    \"Amount\":\" \",\r
+
+      \    \"Msisdn\":\" \",\r
+
+      \    \"BillRefNumber\":\" \"\r
+
+      }"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

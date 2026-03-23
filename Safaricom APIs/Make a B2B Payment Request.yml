@@ -1,0 +1,49 @@
+info:
+  name: Make a B2B Payment Request
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://sandbox.safaricom.co.ke/mpesa/b2b/v1/paymentrequest
+  headers:
+    - name: Authorization
+      value: Bearer <Access-Token>
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: "{\r
+
+      \    \"Initiator\": \"\",\r
+
+      \    \"SecurityCredential\": \"\",\r
+
+      \    \"CommandID\": \"\",\r
+
+      \    \"SenderIdentifierType\": \"\",\r
+
+      \    \"RecieverIdentifierType\": \"\",\r
+
+      \    \"Amount\": \"\",\r
+
+      \    \"PartyA\": \"\",\r
+
+      \    \"PartyB\": \"\",\r
+
+      \    \"AccountReference\": \"\",\r
+
+      \    \"Remarks\": \"\",\r
+
+      \    \"QueueTimeOutURL\": \"\",\r
+
+      \    \"ResultURL\": \"\"\r
+
+      }"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

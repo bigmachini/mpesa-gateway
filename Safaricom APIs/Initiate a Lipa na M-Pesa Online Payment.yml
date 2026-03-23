@@ -1,0 +1,47 @@
+info:
+  name: Initiate a Lipa na M-Pesa Online Payment
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest
+  headers:
+    - name: Authorization
+      value: Bearer <Access-Token>
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: "{\r
+
+      \    \"BusinessShortCode\": \" \",\r
+
+      \    \"Password\": \" \",\r
+
+      \    \"Timestamp\": \" \",\r
+
+      \    \"TransactionType\": \"CustomerPayBillOnline\",\r
+
+      \    \"Amount\": \" \",\r
+
+      \    \"PartyA\": \" \",\r
+
+      \    \"PartyB\": \" \",\r
+
+      \    \"PhoneNumber\": \" \",\r
+
+      \    \"CallBackURL\": \"https://ip_address:port/callback\",\r
+
+      \    \"AccountReference\": \" \",\r
+
+      \    \"TransactionDesc\": \" \"\r
+
+      }"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

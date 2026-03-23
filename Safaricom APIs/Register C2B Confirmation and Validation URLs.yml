@@ -1,0 +1,33 @@
+info:
+  name: Register C2B Confirmation and Validation URLs
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl
+  headers:
+    - name: Authorization
+      value: Bearer <Access-Token>
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: "{\r
+
+      \    \"ShortCode\": \"\",\r
+
+      \    \"ResponseType\": \"\",\r
+
+      \    \"ConfirmationURL\": \"\",\r
+
+      \    \"ValidationURL\": \"\"\r
+
+      }"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
